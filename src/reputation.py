@@ -11,6 +11,8 @@ class ReputationSystem:
         self.scores = {}
         for block in self.bc.chain:
             for tx in block.transactions:
+                if "user" not in tx:  # skip genesis block
+                    continue
                 user = tx["user"]
                 value = tx.get("value", 1)
                 self.scores[user] = self.scores.get(user, 0) + value
@@ -22,10 +24,10 @@ class ReputationSystem:
 
     def export_chart(self, path="charts/reputation.png"):
         import matplotlib.pyplot as plt
-        df = pd.DataFrame(list(self.scores.items()), columns=["User","Score"]).sort_values("Score", ascending=False)
-        plt.figure(figsize=(10,6))
-        plt.bar(df["User"], df["Score"], color='skyblue')
-        plt.xticks(rotation=45, ha='right')
+        df = pd.DataFrame(list(self.scores.items()), columns=["User", "Score"]).sort_values("Score", ascending=False)
+        plt.figure(figsize=(10, 6))
+        plt.bar(df["User"], df["Score"], color="skyblue")
+        plt.xticks(rotation=45, ha="right")
         plt.title("User Reputation Scores")
         plt.tight_layout()
         plt.savefig(path)
