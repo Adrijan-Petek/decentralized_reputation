@@ -12,7 +12,16 @@ class Block:
         self.hash = self.compute_hash()
 
     def compute_hash(self):
-        block_string = json.dumps(self.__dict__, sort_keys=True, default=str)
+        # Exclude self.hash to prevent recursion and ensure stability
+        block_copy = {
+            "index": self.index,
+            "transactions": self.transactions,
+            "previous_hash": self.previous_hash,
+            "timestamp": self.timestamp,
+            "nonce": self.nonce,
+            "difficulty": self.difficulty,
+        }
+        block_string = json.dumps(block_copy, sort_keys=True, default=str)
         return hashlib.sha256(block_string.encode()).hexdigest()
 
 class Blockchain:
@@ -23,7 +32,7 @@ class Blockchain:
         self.create_genesis_block()
 
     def create_genesis_block(self):
-        genesis_block = Block(0, [{"action":"genesis"}], "0", self.difficulty)
+        genesis_block = Block(0, [{"action": "genesis"}], "0", self.difficulty)
         self.chain.append(genesis_block)
 
     def add_transaction(self, user: str, action: str, value: int = 1):
@@ -40,7 +49,7 @@ class Blockchain:
     def is_chain_valid(self):
         for i in range(1, len(self.chain)):
             current = self.chain[i]
-            prev = self.chain[i-1]
+            prev = self.chain[i - 1]
             if current.hash != current.compute_hash() or current.previous_hash != prev.hash:
                 return False
         return True
